@@ -13,6 +13,7 @@ export interface DefaultConfig {
   'window-maximized': boolean;
   'window-position': WindowPositionConfig;
   'url': string;
+  'shuffle': boolean;
   'options': {
     language?: string;
     tray: boolean;
@@ -51,6 +52,7 @@ export const defaultConfig: DefaultConfig = {
     y: -1,
   },
   'url': 'https://music.\u0079\u006f\u0075\u0074\u0075\u0062\u0065.com',
+  'shuffle': false,
   'options': {
     tray: false,
     appVisible: true,

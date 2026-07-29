@@ -7,7 +7,7 @@ export type Store = {
 
   getState: () => StoreState;
   replaceReducer: (param1: unknown) => unknown;
-  subscribe: (callback: () => void) => unknown;
+  subscribe: (callback: () => void) => () => void;
 };
 
 export type QueueElement = HTMLElement & {
@@ -16,6 +16,8 @@ export type QueueElement = HTMLElement & {
 };
 export type QueueAPI = {
   getItems(): QueueItem[];
+  /** Toggles shuffling of the current queue. */
+  shuffle(): void;
   store: {
     store: Store;
   };

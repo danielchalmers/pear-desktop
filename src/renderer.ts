@@ -29,6 +29,8 @@ import type { SearchBoxElement } from '@/types/search-box-element';
 
 setTheme('dark');
 
+const RESTORE_SHUFFLE_TIMEOUT_MS = 10_000;
+
 let api: (Element & MusicPlayer) | null = null;
 let isPluginLoaded = false;
 let isApiLoaded = false;
@@ -355,6 +357,46 @@ async function onApiLoaded() {
   video.addEventListener('loadstart', loadstartListener, { passive: true });
 
   window.ipcRenderer.send('peard:player-api-loaded');
+
+  // Keep the shuffle state saved, so that "Resume last song when app starts"
+  // can bring the queue back shuffled instead of in its original order
+  const saveShuffleState = () => window.mainConfig.set('shuffle', isShuffled());
+
+  const playerBar = document.querySelector('ytmusic-player-bar');
+  if (playerBar) {
+    new MutationObserver(saveShuffleState).observe(playerBar, {
+      attributeFilter: ['shuffle-on'],
+    });
+  }
+
+  if (
+    location.pathname === '/watch' &&
+    window.mainConfig.get('options.resumeOnStart') &&
+    window.mainConfig.get('shuffle')
+  ) {
+    const queue = document.querySelector<QueueElement>('#queue')?.queue;
+    const store = queue?.store.store;
+
+    if (queue && store) {
+      let unsubscribe: (() => void) | undefined;
+
+      // The resumed queue is filled asynchronously, so wait for it before shuffling
+      const shuffleWhenReady = () => {
+        if (!store.getState().queue.items.length) return;
+
+        unsubscribe?.();
+        if (!isShuffled()) queue.shuffle();
+      };
+
+      unsubscribe = store.subscribe(shuffleWhenReady);
+      shuffleWhenReady();
+      // Give up if it never arrives, so a queue started later isn't shuffled by surprise
+      setTimeout(() => unsubscribe?.(), RESTORE_SHUFFLE_TIMEOUT_MS);
+    }
+  } else {
+    // The observer above only reacts to changes, so record the initial state too
+    saveShuffleState();
+  }
 
   // Navigate to "Starting page"
   const startingPage: string = window.mainConfig.get('options.startingPage');
