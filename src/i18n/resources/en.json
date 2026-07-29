@@ -614,6 +614,13 @@
         "fetched-lyrics": "Fetched lyrics for Genius"
       }
     },
+    "memory-saver": {
+      "description": "Reloads the page once memory use grows too high, keeping the current song and position. Works around a memory leak in YouTube Music itself that slows the app down over long sessions",
+      "menu": {
+        "threshold": "Reload above"
+      },
+      "name": "Memory Saver"
+    },
     "music-together": {
       "description": "Share a playlist with others. When the host plays a song, everyone else will hear the same song",
       "dialog": {
